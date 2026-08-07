@@ -20,6 +20,7 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 
 3. Start the runtime:
    - `sh deploy/hfut/start.sh`
+   - or, when the current user is not in the Docker group: `DOCKER_CMD="sudo docker" sh deploy/hfut/start.sh`
 
 4. Verify the service:
    - `curl http://127.0.0.1:9202/resume/health`

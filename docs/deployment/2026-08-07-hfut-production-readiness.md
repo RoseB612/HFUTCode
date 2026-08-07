@@ -220,6 +220,12 @@ cp deploy/hfut/runtime.env.example deploy/hfut/runtime.env
 sh deploy/hfut/start.sh
 ```
 
+如果当前用户没有 Docker 权限，使用：
+
+```bash
+DOCKER_CMD="sudo docker" sh deploy/hfut/start.sh
+```
+
 ### 6.4 验证服务
 
 ```bash
