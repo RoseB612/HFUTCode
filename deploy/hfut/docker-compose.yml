@@ -102,7 +102,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-dummy-key}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
     ports:
-      - "9202:9202"
+      - "${FRIEND_HOST_PORT:-9202}:9202"
 
 volumes:
   postgres_data:

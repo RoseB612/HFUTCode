@@ -213,6 +213,7 @@ cp deploy/hfut/runtime.env.example deploy/hfut/runtime.env
 - `MINIO_PUBLIC_BASE_URL`
 - `OPENAI_API_KEY`
 - `OPENAI_BASE_URL`
+- `FRIEND_HOST_PORT`
 
 ### 6.3 启动服务
 
@@ -233,6 +234,12 @@ curl http://127.0.0.1:9202/resume/health
 ```
 
 预期返回包含 `ok`。
+
+如果云防火墙只放行了 `8080`，设置 `FRIEND_HOST_PORT=8080`，然后验证：
+
+```bash
+curl http://127.0.0.1:8080/resume/health
+```
 
 ## 7. GitHub 创建仓库状态
 

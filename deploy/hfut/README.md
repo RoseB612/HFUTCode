@@ -24,6 +24,7 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 
 4. Verify the service:
    - `curl http://127.0.0.1:9202/resume/health`
+   - If `FRIEND_HOST_PORT=8080`, use `curl http://127.0.0.1:8080/resume/health`
 
 ## Important Notes
 
