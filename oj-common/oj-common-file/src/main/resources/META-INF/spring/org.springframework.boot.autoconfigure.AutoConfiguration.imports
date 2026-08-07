@@ -1,3 +1,6 @@
 com.sintao.common.file.config.OSSConfig
 com.sintao.common.file.service.OSSService
 com.sintao.common.file.config.OSSProperties
+com.sintao.common.file.config.MinioConfig
+com.sintao.common.file.service.MinioService
+com.sintao.common.file.config.MinioProperties

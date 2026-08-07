@@ -1,0 +1,111 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: syncode-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-syncode_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-syncode}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-runtime}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../dev/sql/2026-08-05-ai-interview-postgres.sql:/docker-entrypoint-initdb.d/01-syncode-resume.sql:ro
+
+  redis:
+    image: redis:7-alpine
+    container_name: syncode-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-change-me-runtime}"]
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: syncode-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change-me-runtime}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-23T20-07-56Z
+    container_name: syncode-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-02-21T21-00-03Z
+    container_name: syncode-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin}; do sleep 2; done;
+      mc mb -p local/${MINIO_BUCKET_NAME:-syncode} || true;
+      exit 0;
+      "
+
+  friend:
+    build:
+      context: ../..
+      dockerfile: deploy/prod/docker/java-service.Dockerfile
+      args:
+        JAR_FILE: oj-modules/oj-friend/target/oj-friend-1.0-SNAPSHOT.jar
+    container_name: syncode-friend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - minio
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SERVER_PORT: 9202
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-syncode_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-syncode}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-runtime}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-runtime}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change-me-runtime}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-syncode}
+      MINIO_PUBLIC_BASE_URL: http://127.0.0.1:9000
+      MINIO_PATH_PREFIX: resume/
+      RESUME_UPLOAD_MAX_FILE_SIZE_MB: ${RESUME_UPLOAD_MAX_FILE_SIZE_MB:-10}
+      RESUME_UPLOAD_DAILY_LIMIT: ${RESUME_UPLOAD_DAILY_LIMIT:-10}
+      RESUME_REANALYZE_DAILY_LIMIT: ${RESUME_REANALYZE_DAILY_LIMIT:-20}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-dummy-key}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+    ports:
+      - "9202:9202"
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  minio_data:

@@ -77,7 +77,7 @@ public class UserServiceImpl implements IUserService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${file.oss.downloadUrl}")
+    @Value("${file.minio.public-base-url:}")
     private String downloadUrl;
 
     @Override

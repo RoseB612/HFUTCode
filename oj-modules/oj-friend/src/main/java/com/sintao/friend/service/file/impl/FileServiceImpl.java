@@ -2,8 +2,9 @@ package com.sintao.friend.service.file.impl;
 
 
 import com.sintao.common.core.enums.ResultCode;
+import com.sintao.common.file.domain.MinioResult;
 import com.sintao.common.file.domain.OSSResult;
-import com.sintao.common.file.service.OSSService;
+import com.sintao.common.file.service.MinioService;
 import com.sintao.common.security.exception.ServiceException;
 import com.sintao.friend.service.file.IFileService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileServiceImpl implements IFileService {
 
     @Autowired
-    private OSSService ossService;
+    private MinioService minioService;
 
     @Override
     public OSSResult upload(MultipartFile file) {
         try {
-            return ossService.uploadFile(file);
+            MinioResult minioResult = minioService.uploadFile(file);
+            OSSResult result = new OSSResult();
+            result.setName(minioResult.getName());
+            result.setSuccess(minioResult.isSuccess());
+            return result;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new ServiceException(ResultCode.FAILED_FILE_UPLOAD);

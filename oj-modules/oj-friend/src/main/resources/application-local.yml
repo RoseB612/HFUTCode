@@ -6,10 +6,10 @@ jwt:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:bitoj_dev}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai}
-    username: ${SPRING_DATASOURCE_USERNAME:${MYSQL_APP_USER:ojtest}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${MYSQL_PASSWORD:change-me-local}}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${POSTGRES_HOST:127.0.0.1}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE:syncode_dev}}
+    username: ${SPRING_DATASOURCE_USERNAME:${POSTGRES_USER:syncode}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${POSTGRES_PASSWORD:change-me-local}}
+    driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
@@ -33,6 +33,10 @@ spring:
               - uri: ${OJ_JUDGE_BASE_URL:http://127.0.0.1:9204}
             oj-agent:
               - uri: ${AGENT_PUBLIC_BASE_URL:http://127.0.0.1:8015}
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:dummy-key}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
 
 mail:
   host: smtp.qq.com
@@ -48,6 +52,22 @@ mail:
   code-expiration: 5
   send-limit: 3
   is-send: false
+
+file:
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${MINIO_BUCKET_NAME:syncode}
+    public-base-url: ${MINIO_PUBLIC_BASE_URL:http://127.0.0.1:9000}
+    path-prefix: ${MINIO_PATH_PREFIX:resume/}
+
+resume:
+  upload:
+    max-file-size-mb: ${RESUME_UPLOAD_MAX_FILE_SIZE_MB:10}
+    daily-limit: ${RESUME_UPLOAD_DAILY_LIMIT:10}
+  reanalyze:
+    daily-limit: ${RESUME_REANALYZE_DAILY_LIMIT:20}
 
 training:
   agent:
