@@ -210,6 +210,7 @@ cp deploy/hfut/runtime.env.example deploy/hfut/runtime.env
 - `REDIS_PASSWORD`
 - `RABBITMQ_DEFAULT_PASS`
 - `MINIO_SECRET_KEY`
+- `MINIO_PUBLIC_BASE_URL`
 - `OPENAI_API_KEY`
 - `OPENAI_BASE_URL`
 

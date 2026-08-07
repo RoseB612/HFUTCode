@@ -15,10 +15,13 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 1. Build the application JAR:
    - `mvn -pl oj-modules/oj-friend -am -DskipTests package`
 
-2. Start the runtime:
+2. Create and edit runtime variables:
+   - `cp deploy/hfut/runtime.env.example deploy/hfut/runtime.env`
+
+3. Start the runtime:
    - `sh deploy/hfut/start.sh`
 
-3. Verify the service:
+4. Verify the service:
    - `curl http://127.0.0.1:9202/resume/health`
 
 ## Important Notes
