@@ -189,6 +189,7 @@ BUILD SUCCESS
 - PostgreSQL `5432` 和 Redis `16379` 不建议对公网开放。
 - MinIO、RabbitMQ 管理端口建议只允许自己 IP 访问。
 - 最终应该用 Nginx + HTTPS 暴露业务接口。
+- 本次轻量 compose 已将 PostgreSQL、Redis、RabbitMQ、MinIO 绑定到 `127.0.0.1`，避免默认暴露到公网。
 
 ## 6. 服务器上线步骤
 
