@@ -30,6 +30,7 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 
 - The MinIO bucket is created automatically.
 - The Postgres schema for resume analysis is initialized from `deploy/dev/sql/2026-08-05-ai-interview-postgres.sql`.
+- Elasticsearch is optional in this lightweight setup; the question services fall back to PostgreSQL when the ES repository is disabled.
 - The compose file is meant for the small 4C4G server and does not bring up the whole original swarm stack.
 - PostgreSQL, Redis, RabbitMQ, and MinIO are bound to `127.0.0.1` by default. Only the application host port should be exposed publicly.
 - The compose file uses mirror-backed images to avoid Docker Hub timeouts on small cloud servers.

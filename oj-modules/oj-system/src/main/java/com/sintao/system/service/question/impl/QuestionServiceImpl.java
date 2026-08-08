@@ -21,6 +21,7 @@ import com.sintao.system.mapper.question.QuestionMapper;
 import com.sintao.system.service.question.IQuestionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class QuestionServiceImpl implements IQuestionService {
     private QuestionMapper questionMapper;
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private ObjectProvider<QuestionRepository> questionRepositoryProvider;
 
     @Autowired
     private QuestionCacheManager questionCacheManager;
@@ -68,9 +69,7 @@ public class QuestionServiceImpl implements IQuestionService {
         if (insert <= 0) {
             return false;
         }
-        QuestionES questionES = new QuestionES();
-        BeanUtil.copyProperties(question, questionES);
-        questionRepository.save(questionES);
+        saveQuestionIndex(question);
         questionCacheManager.addCache(question.getQuestionId());
         return true;
     }
@@ -104,9 +103,7 @@ public class QuestionServiceImpl implements IQuestionService {
         oldQuestion.setQuestionCase(questionEditDTO.getQuestionCase());
         oldQuestion.setDefaultCode(questionEditDTO.getDefaultCode());
         oldQuestion.setMainFuc(questionEditDTO.getMainFuc());
-        QuestionES questionES = new QuestionES();
-        BeanUtil.copyProperties(oldQuestion, questionES);
-        questionRepository.save(questionES);
+        saveQuestionIndex(oldQuestion);
         return questionMapper.updateById(oldQuestion);
     }
 
@@ -116,8 +113,30 @@ public class QuestionServiceImpl implements IQuestionService {
         if (question == null) {
             throw new ServiceException(ResultCode.FAILED_NOT_EXISTS);
         }
-        questionRepository.deleteById(questionId);
+        deleteQuestionIndex(questionId);
         questionCacheManager.deleteCache(questionId);
         return questionMapper.deleteById(questionId);
+    }
+
+    private void saveQuestionIndex(Question question) {
+        QuestionRepository questionRepository = getQuestionRepository();
+        if (questionRepository == null) {
+            return;
+        }
+        QuestionES questionES = new QuestionES();
+        BeanUtil.copyProperties(question, questionES);
+        questionRepository.save(questionES);
+    }
+
+    private void deleteQuestionIndex(Long questionId) {
+        QuestionRepository questionRepository = getQuestionRepository();
+        if (questionRepository == null) {
+            return;
+        }
+        questionRepository.deleteById(questionId);
+    }
+
+    private QuestionRepository getQuestionRepository() {
+        return questionRepositoryProvider.getIfAvailable();
     }
 }

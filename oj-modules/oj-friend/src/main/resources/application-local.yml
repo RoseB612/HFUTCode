@@ -15,6 +15,9 @@ spring:
       host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:16379}
       password: ${REDIS_PASSWORD:change-me-local}
+    elasticsearch:
+      repositories:
+        enabled: ${SPRING_DATA_ELASTICSEARCH_REPOSITORIES_ENABLED:false}
   rabbitmq:
     host: ${RABBITMQ_HOST:127.0.0.1}
     port: ${RABBITMQ_PORT:5672}

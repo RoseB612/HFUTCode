@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sintao.friend.mapper.question.QuestionMapper">
+
+    <select id="selectQuestionList" resultType="com.sintao.friend.domain.question.vo.QuestionVO">
+        SELECT
+            tq.question_id,
+            tq.title,
+            tq.difficulty
+        FROM
+            tb_question tq
+        <where>
+            <if test="difficulty != null">
+                AND tq.difficulty = #{difficulty}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    tq.title LIKE CONCAT('%', #{keyword}, '%')
+                    OR tq.content LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY
+            tq.create_time DESC
+    </select>
+</mapper>

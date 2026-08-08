@@ -34,6 +34,7 @@ import com.sintao.friend.mapper.user.UserSubmitMapper;
 import com.sintao.friend.rabbit.JudgeProducer;
 import com.sintao.friend.service.user.IUserQuestionService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 public class UserQuestionServiceImpl implements IUserQuestionService {
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private ObjectProvider<QuestionRepository> questionRepositoryProvider;
 
     @Autowired
     private QuestionMapper questionMapper;
@@ -177,9 +178,12 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
     }
 
     private QuestionES loadQuestion(Long questionId) {
-        QuestionES questionES = questionRepository.findById(questionId).orElse(null);
-        if (questionES != null) {
-            return questionES;
+        QuestionRepository questionRepository = getQuestionRepository();
+        if (questionRepository != null) {
+            QuestionES questionES = questionRepository.findById(questionId).orElse(null);
+            if (questionES != null) {
+                return questionES;
+            }
         }
         Question question = questionMapper.selectById(questionId);
         if (question == null) {
@@ -187,7 +191,9 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         }
         QuestionES fallback = new QuestionES();
         BeanUtil.copyProperties(question, fallback);
-        questionRepository.save(fallback);
+        if (questionRepository != null) {
+            questionRepository.save(fallback);
+        }
         return fallback;
     }
 
@@ -279,6 +285,11 @@ public class UserQuestionServiceImpl implements IUserQuestionService {
         return historyVO;
     }
 
+    private QuestionRepository getQuestionRepository() {
+        return questionRepositoryProvider.getIfAvailable();
+    }
+
     private record RunPayload(List<String> inputList, List<String> outputList) {
     }
 }
+

@@ -24,6 +24,7 @@ import com.sintao.friend.mapper.user.UserSubmitMapper;
 import com.sintao.friend.service.question.IQuestionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 public class QuestionServiceImpl implements IQuestionService {
 
     @Autowired
-    private QuestionRepository questionRepository;
+    private ObjectProvider<QuestionRepository> questionRepositoryProvider;
 
     @Autowired
     private QuestionMapper questionMapper;
@@ -53,10 +54,19 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Override
     public TableDataInfo list(QuestionQueryDTO questionQueryDTO) {
-        long count = countIndexedQuestions();
-        if (count <= 0) {
-            refreshQuestion();
+        QuestionRepository questionRepository = getQuestionRepository();
+        if (questionRepository == null) {
+            PageHelper.startPage(questionQueryDTO.getPageNum(), questionQueryDTO.getPageSize());
+            List<QuestionVO> questionVOList = questionMapper.selectQuestionList(questionQueryDTO);
+            long total = extractTotal(questionVOList);
+            return TableDataInfo.success(questionVOList, total);
         }
+
+        long count = countIndexedQuestions(questionRepository);
+        if (count <= 0) {
+            refreshQuestion(questionRepository);
+        }
+
         Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
         Pageable pageable = PageRequest.of(questionQueryDTO.getPageNum() - 1, questionQueryDTO.getPageSize(), sort);
         Integer difficulty = questionQueryDTO.getDifficulty();
@@ -96,7 +106,8 @@ public class QuestionServiceImpl implements IQuestionService {
 
     @Override
     public QuestionDetailVO detail(Long questionId) {
-        QuestionES questionES = findIndexedQuestion(questionId);
+        QuestionRepository questionRepository = getQuestionRepository();
+        QuestionES questionES = findIndexedQuestion(questionRepository, questionId);
         QuestionDetailVO questionDetailVO = new QuestionDetailVO();
         if (questionES != null) {
             BeanUtil.copyProperties(questionES, questionDetailVO);
@@ -107,7 +118,6 @@ public class QuestionServiceImpl implements IQuestionService {
         if (question == null) {
             return null;
         }
-        refreshQuestion();
         BeanUtil.copyProperties(question, questionDetailVO);
         questionDetailVO.setExampleCases(extractExampleCases(question.getQuestionCase()));
         return questionDetailVO;
@@ -132,6 +142,13 @@ public class QuestionServiceImpl implements IQuestionService {
     }
 
     private void refreshQuestion() {
+        refreshQuestion(getQuestionRepository());
+    }
+
+    private void refreshQuestion(QuestionRepository questionRepository) {
+        if (questionRepository == null) {
+            return;
+        }
         List<Question> questionList = questionMapper.selectList(new LambdaQueryWrapper<>());
         if (CollectionUtil.isEmpty(questionList)) {
             return;
@@ -140,7 +157,10 @@ public class QuestionServiceImpl implements IQuestionService {
         questionRepository.saveAll(questionESList);
     }
 
-    private long countIndexedQuestions() {
+    private long countIndexedQuestions(QuestionRepository questionRepository) {
+        if (questionRepository == null) {
+            return 0L;
+        }
         try {
             return questionRepository.count();
         } catch (NoSuchIndexException ex) {
@@ -149,7 +169,10 @@ public class QuestionServiceImpl implements IQuestionService {
         }
     }
 
-    private QuestionES findIndexedQuestion(Long questionId) {
+    private QuestionES findIndexedQuestion(QuestionRepository questionRepository, Long questionId) {
+        if (questionRepository == null) {
+            return null;
+        }
         try {
             return questionRepository.findById(questionId).orElse(null);
         } catch (NoSuchIndexException ex) {
@@ -208,5 +231,16 @@ public class QuestionServiceImpl implements IQuestionService {
         caseVO.setInput(questionCase.getInput());
         caseVO.setOutput(questionCase.getOutput());
         return caseVO;
+    }
+
+    private QuestionRepository getQuestionRepository() {
+        return questionRepositoryProvider.getIfAvailable();
+    }
+
+    private long extractTotal(List<QuestionVO> questionVOList) {
+        if (questionVOList instanceof com.github.pagehelper.Page<?> page) {
+            return page.getTotal();
+        }
+        return questionVOList == null ? 0L : questionVOList.size();
     }
 }
