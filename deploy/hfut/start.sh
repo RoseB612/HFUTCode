@@ -9,5 +9,4 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 $DOCKER_CMD compose --env-file "$ENV_FILE" -f deploy/hfut/docker-compose.yml up -d postgres redis rabbitmq minio
-$DOCKER_CMD compose --env-file "$ENV_FILE" -f deploy/hfut/docker-compose.yml run --rm minio-init
 $DOCKER_CMD compose --env-file "$ENV_FILE" -f deploy/hfut/docker-compose.yml up -d friend

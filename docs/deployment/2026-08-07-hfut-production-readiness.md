@@ -190,6 +190,7 @@ BUILD SUCCESS
 - MinIO、RabbitMQ 管理端口建议只允许自己 IP 访问。
 - 最终应该用 Nginx + HTTPS 暴露业务接口。
 - 本次轻量 compose 已将 PostgreSQL、Redis、RabbitMQ、MinIO 绑定到 `127.0.0.1`，避免默认暴露到公网。
+- 本次轻量 compose 同时改用了镜像加速地址，减少 Docker Hub 拉镜像超时的风险。
 
 ## 6. 服务器上线步骤
 
