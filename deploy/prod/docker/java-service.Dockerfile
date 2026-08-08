@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre
+FROM mirror.ccs.tencentyun.com/library/eclipse-temurin:17-jre
 
 ARG JAR_FILE
 
