@@ -1,4 +1,82 @@
 services:
+  nginx:
+    image: mirror.ccs.tencentyun.com/library/nginx:1.27-alpine
+    container_name: syncode-nginx
+    restart: unless-stopped
+    depends_on:
+      - web
+      - app
+      - admin
+    ports:
+      - "${FRONTEND_HOST_PORT:-80}:80"
+    volumes:
+      - ../prod/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../prod/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/prod/docker/next-app.Dockerfile
+      args:
+        APP_NAME: web
+        APP_URL: http://app:3000
+        ADMIN_URL: http://admin:3000
+        NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+        SYNCODE_BACKEND_BASE_URL: http://friend:9202
+    container_name: syncode-web
+    restart: unless-stopped
+    depends_on:
+      - friend
+    environment:
+      APP_NAME: web
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      APP_URL: http://app:3000
+      ADMIN_URL: http://admin:3000
+      NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+      SYNCODE_BACKEND_BASE_URL: http://friend:9202
+
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/prod/docker/next-app.Dockerfile
+      args:
+        APP_NAME: app
+        NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+        SYNCODE_BACKEND_BASE_URL: http://friend:9202
+    container_name: syncode-app
+    restart: unless-stopped
+    depends_on:
+      - friend
+    environment:
+      APP_NAME: app
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+      SYNCODE_BACKEND_BASE_URL: http://friend:9202
+
+  admin:
+    build:
+      context: ../..
+      dockerfile: deploy/prod/docker/next-app.Dockerfile
+      args:
+        APP_NAME: admin
+        NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+        SYNCODE_BACKEND_BASE_URL: http://friend:9202
+    container_name: syncode-admin
+    restart: unless-stopped
+    depends_on:
+      - friend
+    environment:
+      APP_NAME: admin
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_BACKEND_BASE_URL: ${NEXT_PUBLIC_BACKEND_BASE_URL:-http://127.0.0.1:8080}
+      SYNCODE_BACKEND_BASE_URL: http://friend:9202
+
   postgres:
     image: mirror.ccs.tencentyun.com/library/postgres:16-alpine
     container_name: syncode-postgres

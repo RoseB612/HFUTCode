@@ -9,6 +9,10 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 - RabbitMQ 3
 - MinIO
 - `oj-friend`
+- `@aioj/web`
+- `@aioj/app`
+- `@aioj/admin`
+- Nginx frontend gateway
 
 ## First Boot
 
@@ -25,6 +29,7 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 4. Verify the service:
    - `curl http://127.0.0.1:9202/resume/health`
    - If `FRIEND_HOST_PORT=8080`, use `curl http://127.0.0.1:8080/resume/health`
+   - If `FRONTEND_HOST_PORT=80`, open `http://<server-ip>/`, `http://<server-ip>/app`, and `http://<server-ip>/admin`
 
 ## Important Notes
 
@@ -34,3 +39,4 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 - The compose file is meant for the small 4C4G server and does not bring up the whole original swarm stack.
 - PostgreSQL, Redis, RabbitMQ, and MinIO are bound to `127.0.0.1` by default. Only the application host port should be exposed publicly.
 - The compose file uses mirror-backed images to avoid Docker Hub timeouts on small cloud servers.
+- Frontend server-side requests use Docker internal `http://friend:9202`; browser-visible URLs use `NEXT_PUBLIC_BACKEND_BASE_URL`.
