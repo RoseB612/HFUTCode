@@ -1,5 +1,5 @@
 import { buildAuthHeaders } from "./auth";
-import { resolveBackendBaseUrl } from "./runtime";
+import { resolveBackendBaseUrl, resolveBackendServicePath } from "./runtime";
 
 export type ApiEnvelope<T> = {
   code: number;
@@ -59,7 +59,7 @@ export async function requestJson<T>(path: string, options: RequestOptions = {})
     });
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
+  const response = await fetch(`${baseUrl}${resolveBackendServicePath(path)}`, {
     ...init,
     headers: finalHeaders,
     cache: "no-store"

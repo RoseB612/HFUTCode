@@ -116,6 +116,14 @@ async function main() {
     "ws://localhost:19090/friend/ws/judge/result"
   );
   assert.equal(
+    api.resolveBackendServicePath("/friend/user/sendCode", ""),
+    "/user/sendCode"
+  );
+  assert.equal(
+    api.resolveBackendServicePath("/friend/question/semiLogin/list", "/api/friend"),
+    "/api/friend/question/semiLogin/list"
+  );
+  assert.equal(
     api.unwrapData({ code: 1000, msg: "ok", data: { ok: true } }).ok,
     true
   );
@@ -149,6 +157,25 @@ async function main() {
         assert.equal(
           api.resolveBackendBaseUrl(),
           "http://public.example:19090"
+        );
+      });
+    }
+  );
+
+  await withPatchedEnv(
+    {
+      NEXT_PUBLIC_BACKEND_SERVICE_PREFIX: "",
+      SYNCODE_BACKEND_SERVICE_PREFIX: ""
+    },
+    async () => {
+      await withWindowValue(undefined, async () => {
+        assert.equal(
+          api.resolveBackendServicePath("/friend/user/sendCode"),
+          "/user/sendCode"
+        );
+        assert.equal(
+          api.resolveJudgeWebSocketUrl("http://localhost:9202"),
+          "ws://localhost:9202/ws/judge/result"
         );
       });
     }

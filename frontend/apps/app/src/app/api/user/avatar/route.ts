@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { buildAuthHeaders, resolveBackendBaseUrl, type ApiEnvelope, requestJson, unwrapData } from "@aioj/api";
+import { buildAuthHeaders, resolveBackendUrl, type ApiEnvelope, requestJson, unwrapData } from "@aioj/api";
 
 import { getServerAccessToken } from "../../../../lib/server-auth";
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     headers.set("Authorization", authHeader);
   }
 
-  const uploadResponse = await fetch(`${resolveBackendBaseUrl()}/friend/file/upload`, {
+  const uploadResponse = await fetch(resolveBackendUrl("/friend/file/upload"), {
     method: "POST",
     headers,
     body: formData,
