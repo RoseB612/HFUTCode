@@ -30,6 +30,7 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
    - `curl http://127.0.0.1:9202/resume/health`
    - If `FRIEND_HOST_PORT=8080`, use `curl http://127.0.0.1:8080/resume/health`
    - If `FRONTEND_HOST_PORT=80`, open `http://<server-ip>/`, `http://<server-ip>/app`, and `http://<server-ip>/admin`
+   - If host Nginx already owns port `80`, set `FRONTEND_HOST_PORT=127.0.0.1:18080` and proxy host Nginx to `http://127.0.0.1:18080`.
 
 ## Important Notes
 
