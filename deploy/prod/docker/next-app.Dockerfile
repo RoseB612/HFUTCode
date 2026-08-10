@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM mirror.ccs.tencentyun.com/library/node:22-alpine AS deps
 
 WORKDIR /workspace
 
@@ -26,7 +26,7 @@ WORKDIR /workspace
 
 RUN npm run build -w @aioj/${APP_NAME}
 
-FROM node:22-alpine AS runner
+FROM mirror.ccs.tencentyun.com/library/node:22-alpine AS runner
 
 ARG APP_NAME
 ENV APP_NAME=${APP_NAME}
