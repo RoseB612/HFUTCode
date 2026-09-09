@@ -41,3 +41,4 @@ This folder contains the minimal runtime setup for the `oj-friend` service on a 
 - PostgreSQL, Redis, RabbitMQ, and MinIO are bound to `127.0.0.1` by default. Only the application host port should be exposed publicly.
 - The compose file uses mirror-backed images to avoid Docker Hub timeouts on small cloud servers.
 - Frontend server-side requests use Docker internal `http://friend:9202`; browser-visible URLs use `NEXT_PUBLIC_BACKEND_BASE_URL`.
+- When using the `hfut.top` domain, point `hfut.top`, `www.hfut.top`, and `api.hfut.top` to the server IP first. See `docs/deployment/hfut-top-domain.md`.
