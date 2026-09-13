@@ -17,7 +17,7 @@ export function CtaSection() {
             <a href="/app">
               <Button size="lg">进入 App</Button>
             </a>
-            <a href="https://github.com/HeJiguang/SynCode" rel="noreferrer" target="_blank">
+            <a href="https://github.com/RoseB612/HFUTCode" rel="noreferrer" target="_blank">
               <Button size="lg" variant="secondary">
                 查看 GitHub
               </Button>
