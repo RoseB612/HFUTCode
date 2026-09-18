@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { frontendPreviewMode } from "@aioj/config";
@@ -913,71 +913,51 @@ const MascotCanvas = React.memo(function MascotCanvas({
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mode, setMode] = React.useState<"login" | "register">("login");
   const [email, setEmail] = React.useState("");
-  const [code, setCode] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [status, setStatus] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [emailFocused, setEmailFocused] = React.useState(false);
-  const [codeFocused, setCodeFocused] = React.useState(false);
+  const [passwordFocused, setPasswordFocused] = React.useState(false);
 
-  async function sendCode() {
+  async function submit() {
     setLoading(true);
     setStatus(null);
 
     try {
-      const response = await fetch(appApiPath("/auth/send-code"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.message ?? "发送验证码失败。");
+      if (mode === "register" && password !== confirmPassword) {
+        throw new Error("两次输入的密码不一致。");
       }
 
-      setStatus("验证码已发送，请检查邮箱。");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "发送验证码失败。");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function login() {
-    setLoading(true);
-    setStatus(null);
-
-    try {
-      const response = await fetch(appApiPath("/auth/login"), {
+      const response = await fetch(appApiPath(mode === "login" ? "/auth/login" : "/auth/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code })
+        body: JSON.stringify({ email, password })
       });
 
       const payload = await response.json();
       if (!response.ok) {
-        throw new Error(payload.message ?? "登录失败。");
+        throw new Error(payload.message ?? (mode === "login" ? "登录失败。" : "注册失败。"));
       }
 
       setBrowserAccessToken(payload.token);
       router.push(appInternalPath("/"));
       router.refresh();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "登录失败。");
+      setStatus(error instanceof Error ? error.message : mode === "login" ? "登录失败。" : "注册失败。");
     } finally {
       setLoading(false);
     }
   }
-
-  const statusTone = status?.includes("失败") ? "text-[var(--danger)]" : "text-[var(--success)]";
 
   return (
     <main className="min-h-screen bg-[var(--bg)] px-4 py-6 md:px-6">
       <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-[1440px] gap-3 lg:grid-cols-[1fr_1fr]">
         <Panel className="hero-grid hidden overflow-hidden bg-[var(--surface-2)] p-4 md:p-6 lg:flex lg:items-center lg:justify-center lg:p-7" tone="strong">
           <div className="h-full w-full">
-            <MascotCanvas emailFocused={emailFocused} passwordFocused={codeFocused} />
+            <MascotCanvas emailFocused={emailFocused} passwordFocused={passwordFocused} />
           </div>
         </Panel>
 
@@ -990,7 +970,9 @@ export default function LoginPage() {
 
           <div className="relative z-10 w-full max-w-[500px]">
             <p className="kicker">Access</p>
-            <h2 className="mt-3 text-3xl font-semibold text-[var(--text-primary)]">登录 SynCode</h2>
+            <h2 className="mt-3 text-3xl font-semibold text-[var(--text-primary)]">
+              {mode === "login" ? "登录 SynCode" : "注册 SynCode"}
+            </h2>
 
             {frontendPreviewMode ? (
               <div className="mt-4 rounded-[18px] border border-[var(--border-soft)] bg-[var(--surface-3)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]">
@@ -999,7 +981,24 @@ export default function LoginPage() {
             ) : null}
 
             <div className="mt-6 rounded-[22px] border border-[var(--border-soft)] bg-[var(--surface-3)] p-5">
-              <div className="space-y-4">
+              <div className="mb-5 grid grid-cols-2 rounded-[12px] bg-[var(--surface-1)] p-1">
+                <button
+                  type="button"
+                  className={`rounded-[9px] px-3 py-2 text-sm transition ${mode === "login" ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)]"}`}
+                  onClick={() => { setMode("login"); setStatus(null); }}
+                >
+                  登录
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-[9px] px-3 py-2 text-sm transition ${mode === "register" ? "bg-[var(--accent)] text-white" : "text-[var(--text-muted)]"}`}
+                  onClick={() => { setMode("register"); setStatus(null); }}
+                >
+                  注册
+                </button>
+              </div>
+
+              <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
                 <div className="space-y-2">
                   <label className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]" htmlFor="email">
                     Email
@@ -1016,27 +1015,41 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]" htmlFor="code">
-                    Verification Code
+                  <label className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]" htmlFor="password">
+                    Password
                   </label>
-                  <div className="grid gap-3 md:grid-cols-[1fr_132px]">
-                    <Input
-                      id="code"
-                      inputMode="numeric"
-                      placeholder="输入验证码"
-                      value={code}
-                      onFocus={() => setCodeFocused(true)}
-                      onBlur={() => setCodeFocused(false)}
-                      onChange={(event) => setCode(event.target.value)}
-                    />
-                    <Button disabled={loading || !email} variant="secondary" onClick={sendCode}>
-                      发送验证码
-                    </Button>
-                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    placeholder="输入密码（至少 8 位）"
+                    value={password}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
                 </div>
 
-                <Button className="w-full" disabled={loading || !email || !code} size="lg" onClick={login}>
-                  登录并进入工作台
+                {mode === "register" ? (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--text-faint)]" htmlFor="confirm-password">
+                      Confirm Password
+                    </label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="再次输入密码"
+                      value={confirmPassword}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                    />
+                  </div>
+                ) : null}
+
+                <Button className="w-full" disabled={loading || !email || !password || (mode === "register" && !confirmPassword)} size="lg" type="submit">
+                  {mode === "login" ? "登录并进入工作台" : "注册并进入工作台"}
                 </Button>
 
                 {frontendPreviewMode ? (
@@ -1047,15 +1060,15 @@ export default function LoginPage() {
 
                 {status ? (
                   <div className="flex items-start gap-3 rounded-[18px] border border-[var(--border-soft)] bg-[var(--surface-1)] px-4 py-3">
-                    <CheckCircle2 size={16} className={`mt-0.5 shrink-0 ${statusTone}`} />
-                    <p className={`text-sm leading-7 ${statusTone}`}>{status}</p>
+                    <CircleAlert size={16} className="mt-0.5 shrink-0 text-[var(--danger)]" />
+                    <p className="text-sm leading-7 text-[var(--danger)]">{status}</p>
                   </div>
                 ) : null}
-              </div>
+              </form>
             </div>
 
             <p className="mt-4 text-xs leading-6 text-[var(--text-muted)]">
-              验证码会发送到你的邮箱。若暂未收到，请先确认邮箱地址可用，再重新发送。
+              邮箱作为登录账号使用，当前不会发送验证邮件。请妥善保管你的密码。
             </p>
           </div>
         </Panel>

@@ -18,9 +18,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sintao</groupId>
-            <artifactId>oj-common-message</artifactId>
-            <version>${oj-common-message.version}</version>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>

@@ -37,8 +37,7 @@ $env:SPRING_ELASTICSEARCH_URIS = "http://127.0.0.1:9200"
 $env:SANDBOX_DOCKER_HOST = "unix:///var/run/docker.sock"
 $env:SANDBOX_DOCKER_VOLUME = "/usr/share/java"
 
-# Optional mail / XXL-Job defaults for local.
-$env:MAIL_IS_SEND = "false"
+# Optional XXL-Job defaults for local.
 $env:XXL_JOB_ADMIN_ADDRESSES = "http://127.0.0.1:8080/xxl-job-admin"
 $env:XXL_JOB_ACCESS_TOKEN = ""
 $env:XXL_JOB_EXECUTOR_APPNAME = "oj-job"

@@ -18,11 +18,6 @@ public enum ResultCode {
     FAILED_USER_PHONE(3105, "你输入的手机号有误"),
     FAILED_FREQUENT(3106, "操作频繁，请稍后重试"),
     FAILED_TIME_LIMIT(3107, "当天请求次数已达到上限"),
-    FAILED_SEND_CODE(3108, "验证码发送错误"),
-    FAILED_INVALID_CODE(3109, "验证码无效"),
-    FAILED_ERROR_CODE(3110, "验证码错误"),
-    FAILED_USER_EMAIL(3111, "你输入的邮箱有误"),
-
     EXAM_START_TIME_BEFORE_CURRENT_TIME(3201, "竞赛开始时间不能早于当前时间"),
     EXAM_START_TIME_AFTER_END_TIME(3202, "竞赛开始时间不能晚于竞赛结束时间"),
     EXAM_NOT_EXISTS(3203, "竞赛不存在"),

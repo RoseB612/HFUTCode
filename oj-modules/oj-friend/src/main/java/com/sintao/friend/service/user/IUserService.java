@@ -2,15 +2,16 @@ package com.sintao.friend.service.user;
 
 import com.sintao.common.core.domain.R;
 import com.sintao.common.core.domain.vo.LoginUserVO;
-import com.sintao.friend.domain.user.dto.UserDTO;
+import com.sintao.friend.domain.user.dto.UserLoginDTO;
+import com.sintao.friend.domain.user.dto.UserRegisterDTO;
 import com.sintao.friend.domain.user.dto.UserUpdateDTO;
 import com.sintao.friend.domain.user.vo.UserDashboardSummaryVO;
 import com.sintao.friend.domain.user.vo.UserVO;
 
 public interface IUserService {
-    boolean sendCode(UserDTO userDTO);
+    String register(UserRegisterDTO userRegisterDTO);
 
-    String codeLogin(String email, String code);
+    String login(UserLoginDTO userLoginDTO);
 
     boolean logout(String token);
 

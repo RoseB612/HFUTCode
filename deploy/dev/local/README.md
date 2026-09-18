@@ -86,6 +86,7 @@ Notes:
   a common dirty local listener on `8015`.
 - `oj-job` can start locally, but its registration to `xxl-job-admin` may still depend
   on the admin-side access token configuration.
-- Local login / mail testing uses `MAIL_IS_SEND=false` by default, so email codes are
-  not sent to a real mailbox in local mode. The code path still works, but the local
-  default verification code is `123456`.
+- User login uses email and password; no verification email is sent. Seed users such
+  as `demo_user_1@syncode.dev` use the local development password `SynCode123!`.
+- Databases created before the password-login change must run
+  `deploy/dev/sql/2026-09-17-user-password-auth.sql` once before starting the services.

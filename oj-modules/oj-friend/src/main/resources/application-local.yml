@@ -41,21 +41,6 @@ spring:
       api-key: ${OPENAI_API_KEY:dummy-key}
       base-url: ${OPENAI_BASE_URL:https://api.openai.com}
 
-mail:
-  host: smtp.qq.com
-  port: 587
-  username: your_email@qq.com
-  password: your_smtp_auth_code
-  from: your_email@qq.com
-  subject: OnlineOJ email code
-  auth: true
-  starttls: true
-  starttls-required: true
-  ssl-protocols: TLSv1.2
-  code-expiration: 5
-  send-limit: 3
-  is-send: false
-
 file:
   minio:
     endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}

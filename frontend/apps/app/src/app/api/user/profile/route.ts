@@ -7,7 +7,6 @@ import { getServerAccessToken } from "../../../../lib/server-auth";
 
 type UpdateProfileBody = {
   nickName?: string;
-  email?: string;
   schoolName?: string;
   majorName?: string;
   introduce?: string;
@@ -25,7 +24,6 @@ export async function PUT(request: Request) {
     token,
     body: JSON.stringify({
       nickName: body.nickName?.trim() || undefined,
-      email: body.email?.trim() || undefined,
       schoolName: body.schoolName?.trim() || undefined,
       majorName: body.majorName?.trim() || undefined,
       introduce: body.introduce?.trim() || undefined

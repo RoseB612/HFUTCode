@@ -14,7 +14,7 @@ import java.util.List;
  *   ignore:
  *     whites:
  *       - /user/login
- *       - /user/sendCode
+ *       - /user/register
  * </pre>
  */
 @Component

@@ -4,7 +4,8 @@ import com.sintao.common.core.constants.HttpConstants;
 import com.sintao.common.core.controller.BaseController;
 import com.sintao.common.core.domain.R;
 import com.sintao.common.core.domain.vo.LoginUserVO;
-import com.sintao.friend.domain.user.dto.UserDTO;
+import com.sintao.friend.domain.user.dto.UserLoginDTO;
+import com.sintao.friend.domain.user.dto.UserRegisterDTO;
 import com.sintao.friend.domain.user.dto.UserUpdateDTO;
 import com.sintao.friend.domain.user.vo.UserDashboardSummaryVO;
 import com.sintao.friend.domain.user.vo.UserVO;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,20 +34,20 @@ public class UserController extends BaseController {
     @Autowired
     private IUserService userService;
 
-    @PostMapping("sendCode")
-    @Operation(summary = "发送验证码", description = "向指定邮箱发送邮件验证码，用于登录或注册")
-    @ApiResponse(responseCode = "200", description = "发送成功")
-    @ApiResponse(responseCode = "2000", description = "邮箱格式错误、发送过于频繁或超过当日限制")
-    public R<Void> sendCode(@RequestBody UserDTO userDTO) {
-        return toR(userService.sendCode(userDTO));
+    @PostMapping("/register")
+    @Operation(summary = "用户注册", description = "使用邮箱和密码注册，成功后直接返回 token")
+    @ApiResponse(responseCode = "200", description = "注册成功，返回 token")
+    @ApiResponse(responseCode = "2000", description = "参数错误或邮箱已注册")
+    public R<String> register(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
+        return R.ok(userService.register(userRegisterDTO));
     }
 
-    @PostMapping("/code/login")
-    @Operation(summary = "验证码登录", description = "使用邮箱验证码登录，新用户自动注册")
+    @PostMapping("/login")
+    @Operation(summary = "用户登录", description = "使用邮箱和密码登录")
     @ApiResponse(responseCode = "200", description = "登录成功，返回 token")
-    @ApiResponse(responseCode = "2000", description = "验证码错误或已过期")
-    public R<String> codeLogin(@RequestBody UserDTO userDTO) {
-        return R.ok(userService.codeLogin(userDTO.getEmail(), userDTO.getCode()));
+    @ApiResponse(responseCode = "2000", description = "邮箱或密码错误")
+    public R<String> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
+        return R.ok(userService.login(userLoginDTO));
     }
 
     @DeleteMapping("/logout")

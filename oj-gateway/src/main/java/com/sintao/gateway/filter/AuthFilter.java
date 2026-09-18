@@ -40,6 +40,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     private static final List<String> BUILT_IN_PUBLIC_PATHS = Arrays.asList(
             "/system/sysUser/login",
+            "/friend/user/register",
+            "/friend/user/login",
             "/friend/message/semiLogin/**"
     );
 

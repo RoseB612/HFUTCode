@@ -2,7 +2,6 @@ package com.sintao.friend.service.user.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.sintao.common.core.constants.CacheConstants;
 import com.sintao.common.core.constants.Constants;
 import com.sintao.common.core.constants.HttpConstants;
 import com.sintao.common.core.domain.LoginUser;
@@ -12,12 +11,11 @@ import com.sintao.common.core.enums.ResultCode;
 import com.sintao.common.core.enums.UserIdentity;
 import com.sintao.common.core.enums.UserStatus;
 import com.sintao.common.core.utils.ThreadLocalUtil;
-import com.sintao.common.message.service.MailService;
-import com.sintao.common.redis.service.RedisService;
 import com.sintao.common.security.exception.ServiceException;
 import com.sintao.common.security.service.TokenService;
 import com.sintao.friend.domain.user.User;
-import com.sintao.friend.domain.user.dto.UserDTO;
+import com.sintao.friend.domain.user.dto.UserLoginDTO;
+import com.sintao.friend.domain.user.dto.UserRegisterDTO;
 import com.sintao.friend.domain.user.dto.UserUpdateDTO;
 import com.sintao.friend.domain.user.vo.UserDashboardSummaryVO;
 import com.sintao.friend.domain.user.vo.UserHeatmapPointVO;
@@ -29,23 +27,24 @@ import com.sintao.friend.service.user.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements IUserService {
 
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final BCryptPasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+    private static final String DEFAULT_NICK_NAME = "SynCoder";
 
     @Autowired
     private UserMapper userMapper;
@@ -54,25 +53,10 @@ public class UserServiceImpl implements IUserService {
     private TokenService tokenService;
 
     @Autowired
-    private MailService mailService;
-
-    @Autowired
-    private RedisService redisService;
-
-    @Autowired
     private UserCacheManager userCacheManager;
 
     @Autowired
     private UserSubmitMapper userSubmitMapper;
-
-    @Value("${mail.code-expiration:5}")
-    private Long emailCodeExpiration;
-
-    @Value("${mail.send-limit:3}")
-    private Integer sendLimit;
-
-    @Value("${mail.is-send:false}")
-    private boolean isSend;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -81,53 +65,44 @@ public class UserServiceImpl implements IUserService {
     private String downloadUrl;
 
     @Override
-    public boolean sendCode(UserDTO userDTO) {
-        String email = userDTO.getEmail();
-        if (!checkEmail(email)) {
-            throw new ServiceException(ResultCode.FAILED_USER_EMAIL);
+    @Transactional
+    public String register(UserRegisterDTO userRegisterDTO) {
+        String email = normalizeEmail(userRegisterDTO.getEmail());
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
+        if (user != null) {
+            throw new ServiceException(ResultCode.FAILED_USER_EXISTS);
         }
 
-        String emailCodeKey = getEmailCodeKey(email);
-        Long expire = redisService.getExpire(emailCodeKey, TimeUnit.SECONDS);
-        if (expire != null && expire > 0 && (emailCodeExpiration * 60 - expire) < 60) {
-            throw new ServiceException(ResultCode.FAILED_FREQUENT);
+        user = new User();
+        user.setEmail(email);
+        user.setPassword(PASSWORD_ENCODER.encode(userRegisterDTO.getPassword()));
+        user.setNickName(DEFAULT_NICK_NAME);
+        user.setStatus(UserStatus.Normal.getValue());
+        user.setCreateBy(Constants.SYSTEM_USER_ID);
+        try {
+            userMapper.insert(user);
+        } catch (DataIntegrityViolationException exception) {
+            log.info("register rejected because email already exists, email={}", email);
+            throw new ServiceException(ResultCode.FAILED_USER_EXISTS);
         }
 
-        String codeTimeKey = getEmailCodeTimeKey(email);
-        Long sendTimes = redisService.getCacheObject(codeTimeKey, Long.class);
-        if (sendTimes != null && sendTimes >= sendLimit) {
-            throw new ServiceException(ResultCode.FAILED_TIME_LIMIT);
-        }
-
-        String code = isSend ? mailService.generateCode() : Constants.DEFAULT_CODE;
-        redisService.setCacheObject(emailCodeKey, code, emailCodeExpiration, TimeUnit.MINUTES);
-        log.info("[email-code] email={}, code={}", email, code);
-
-        if (isSend && !mailService.sendLoginCode(email, code)) {
-            throw new ServiceException(ResultCode.FAILED_SEND_CODE);
-        }
-
-        redisService.increment(codeTimeKey);
-        if (sendTimes == null) {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime nextMidnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-            long seconds = ChronoUnit.SECONDS.between(now, nextMidnight);
-            redisService.expire(codeTimeKey, seconds, TimeUnit.SECONDS);
-        }
-        return true;
+        return createToken(user);
     }
 
     @Override
-    public String codeLogin(String email, String code) {
-        checkCode(email, code);
+    public String login(UserLoginDTO userLoginDTO) {
+        String email = normalizeEmail(userLoginDTO.getEmail());
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getEmail, email));
-        if (user == null) {
-            user = new User();
-            user.setEmail(email);
-            user.setStatus(UserStatus.Normal.getValue());
-            user.setCreateBy(Constants.SYSTEM_USER_ID);
-            userMapper.insert(user);
+        if (user == null || !PASSWORD_ENCODER.matches(userLoginDTO.getPassword(), user.getPassword())) {
+            throw new ServiceException(ResultCode.FAILED_LOGIN);
         }
+        if (Objects.equals(UserStatus.Block.getValue(), user.getStatus())) {
+            throw new ServiceException(ResultCode.FAILED_USER_BANNED);
+        }
+        return createToken(user);
+    }
+
+    private String createToken(User user) {
         return tokenService.createToken(
                 user.getUserId(),
                 secret,
@@ -212,7 +187,6 @@ public class UserServiceImpl implements IUserService {
         user.setSchoolName(userUpdateDTO.getSchoolName());
         user.setMajorName(userUpdateDTO.getMajorName());
         user.setPhone(userUpdateDTO.getPhone());
-        user.setEmail(userUpdateDTO.getEmail());
         user.setWechat(userUpdateDTO.getWechat());
         user.setIntroduce(userUpdateDTO.getIntroduce());
         userCacheManager.refreshUser(user);
@@ -244,32 +218,8 @@ public class UserServiceImpl implements IUserService {
         return userMapper.updateById(user);
     }
 
-    private void checkCode(String email, String code) {
-        String emailCodeKey = getEmailCodeKey(email);
-        String cacheCode = redisService.getCacheObject(emailCodeKey, String.class);
-        if (StrUtil.isEmpty(cacheCode)) {
-            throw new ServiceException(ResultCode.FAILED_INVALID_CODE);
-        }
-        if (!cacheCode.equals(code)) {
-            throw new ServiceException(ResultCode.FAILED_ERROR_CODE);
-        }
-        redisService.deleteObject(emailCodeKey);
-    }
-
-    public static boolean checkEmail(String email) {
-        if (StrUtil.isBlank(email)) {
-            return false;
-        }
-        Matcher matcher = EMAIL_PATTERN.matcher(email);
-        return matcher.matches();
-    }
-
-    private String getEmailCodeKey(String email) {
-        return CacheConstants.EMAIL_CODE_KEY + email;
-    }
-
-    private String getEmailCodeTimeKey(String email) {
-        return CacheConstants.EMAIL_CODE_TIME_KEY + email;
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     private Integer defaultZero(Integer value) {

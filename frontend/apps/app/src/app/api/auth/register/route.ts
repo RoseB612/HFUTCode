@@ -6,7 +6,7 @@ import { resolveApiRouteError } from "../../../../lib/api-route-error";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const payload = await requestJson<{ code: number; msg: string; data: string }>("/friend/user/login", {
+    const payload = await requestJson<{ code: number; msg: string; data: string }>("/friend/user/register", {
       method: "POST",
       body: JSON.stringify(body)
     });
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     });
     return response;
   } catch (error) {
-    const { status, body } = resolveApiRouteError(error, "\u767b\u5f55\u5931\u8d25\u3002");
+    const { status, body } = resolveApiRouteError(error, "注册失败。");
     return NextResponse.json(body, { status });
   }
 }

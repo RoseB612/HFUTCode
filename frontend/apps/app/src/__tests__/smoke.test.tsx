@@ -59,6 +59,11 @@ async function main() {
   assert.match(loginSource, /eyeFollowWeight/);
   assert.match(loginSource, /syncode-track-wordmark/);
   assert.match(loginSource, /直接进入预览模式/);
+  assert.match(loginSource, /\/auth\/register/);
+  assert.match(loginSource, /\/auth\/login/);
+  assert.match(loginSource, /注册并进入工作台/);
+  assert.match(loginSource, /type="password"/);
+  assert.doesNotMatch(loginSource, /发送验证码/);
 
   assert.match(loginSource, /rgba\(16,185,129,0\.78\)/);
   assert.match(loginSource, /rgba\(14,18,17,0\.96\)/);

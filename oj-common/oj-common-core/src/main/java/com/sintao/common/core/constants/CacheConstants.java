@@ -10,11 +10,7 @@ public class CacheConstants {
 
     public static final String PHONE_CODE_KEY = "p:c:";
 
-    public static final String EMAIL_CODE_KEY = "e:c:";
-
     public static final String CODE_TIME_KEY = "c:t:";
-
-    public static final String EMAIL_CODE_TIME_KEY = "e:t:";
 
     public static final String EXAM_UNFINISHED_LIST = "e:t:l";
 

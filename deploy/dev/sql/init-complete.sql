@@ -72,8 +72,8 @@ CREATE TABLE IF NOT EXISTS tb_user (
     head_image varchar(200) DEFAULT NULL COMMENT 'avatar',
     sex tinyint DEFAULT NULL COMMENT '1 male 2 female',
     phone varchar(20) DEFAULT NULL COMMENT 'optional phone after email-login pivot',
-    code char(6) DEFAULT NULL COMMENT 'email verification code',
-    email varchar(100) DEFAULT NULL COMMENT 'email used by email-code login',
+    email varchar(100) NOT NULL COMMENT 'email login account',
+    password char(60) NOT NULL COMMENT 'bcrypt password',
     wechat varchar(20) DEFAULT NULL COMMENT 'wechat id',
     school_name varchar(50) DEFAULT NULL COMMENT 'school',
     major_name varchar(50) DEFAULT NULL COMMENT 'major',
@@ -83,7 +83,8 @@ CREATE TABLE IF NOT EXISTS tb_user (
     create_time datetime NOT NULL COMMENT 'created time',
     update_by bigint unsigned DEFAULT NULL COMMENT 'updater',
     update_time datetime DEFAULT NULL COMMENT 'updated time',
-    PRIMARY KEY (user_id)
+    PRIMARY KEY (user_id),
+    UNIQUE KEY uk_user_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='frontend users';
 
 CREATE TABLE IF NOT EXISTS tb_user_exam (
@@ -246,16 +247,17 @@ ON DUPLICATE KEY UPDATE
     update_time = VALUES(update_time);
 
 INSERT INTO tb_user (
-    user_id, nick_name, head_image, sex, phone, code, email, wechat, school_name, major_name, introduce, status, create_by, create_time, update_by, update_time
+    user_id, nick_name, head_image, sex, phone, email, password, wechat, school_name, major_name, introduce, status, create_by, create_time, update_by, update_time
 ) VALUES
-    (10001, 'Demo Learner', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-1', 1, NULL, NULL, 'demo_user_1@syncode.dev', NULL, 'UESTC', 'Software Engineering', 'Starter learner focused on arrays and strings.', 1, 1, NOW(), 1, NOW()),
-    (10002, 'Practice Bot', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-2', 2, NULL, NULL, 'demo_user_2@syncode.dev', NULL, 'SCU', 'Computer Science', 'Wants a structured plan for algorithm progress.', 1, 1, NOW(), 1, NOW()),
-    (10003, 'Contest User', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-3', 1, NULL, NULL, 'demo_user_3@syncode.dev', NULL, 'CQU', 'Artificial Intelligence', 'Joins weekly contests and training tasks.', 1, 1, NOW(), 1, NOW())
+    (10001, 'Demo Learner', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-1', 1, NULL, 'demo_user_1@syncode.dev', '$2b$10$uWcGB3sflUauVAsYeEuDcuHLr7xYl5io/utC/yq.Rr591i0J6m2oa', NULL, 'UESTC', 'Software Engineering', 'Starter learner focused on arrays and strings.', 1, 1, NOW(), 1, NOW()),
+    (10002, 'Practice Bot', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-2', 2, NULL, 'demo_user_2@syncode.dev', '$2b$10$uWcGB3sflUauVAsYeEuDcuHLr7xYl5io/utC/yq.Rr591i0J6m2oa', NULL, 'SCU', 'Computer Science', 'Wants a structured plan for algorithm progress.', 1, 1, NOW(), 1, NOW()),
+    (10003, 'Contest User', 'https://api.dicebear.com/9.x/thumbs/svg?seed=syncode-user-3', 1, NULL, 'demo_user_3@syncode.dev', '$2b$10$uWcGB3sflUauVAsYeEuDcuHLr7xYl5io/utC/yq.Rr591i0J6m2oa', NULL, 'CQU', 'Artificial Intelligence', 'Joins weekly contests and training tasks.', 1, 1, NOW(), 1, NOW())
 ON DUPLICATE KEY UPDATE
     nick_name = VALUES(nick_name),
     head_image = VALUES(head_image),
     sex = VALUES(sex),
     email = VALUES(email),
+    password = VALUES(password),
     school_name = VALUES(school_name),
     major_name = VALUES(major_name),
     introduce = VALUES(introduce),

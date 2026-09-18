@@ -16,7 +16,6 @@ type ProfileSettingsFormProps = {
 export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
   const [form, setForm] = useState({
     nickName: profile.nickName,
-    email: profile.email,
     schoolName: profile.schoolName,
     majorName: profile.majorName,
     introduce: profile.headline
@@ -141,7 +140,8 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
           </label>
           <label className="space-y-2">
             <span className="text-sm text-[var(--text-secondary)]">邮箱</span>
-            <Input type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
+            <Input type="email" value={profile.email} disabled />
+            <span className="block text-xs text-[var(--text-muted)]">邮箱是当前登录账号，暂不支持修改。</span>
           </label>
           <label className="space-y-2">
             <span className="text-sm text-[var(--text-secondary)]">学校</span>

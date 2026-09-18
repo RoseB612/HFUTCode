@@ -7,8 +7,8 @@ jwt:
 security:
   ignore:
     whites:
-      - /friend/user/sendCode
-      - /friend/user/code/login
+      - /friend/user/register
+      - /friend/user/login
       - /friend/question/semiLogin/**
       - /friend/exam/semiLogin/**
       - /friend/message/semiLogin/**

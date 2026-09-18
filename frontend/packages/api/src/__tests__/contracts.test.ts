@@ -116,8 +116,8 @@ async function main() {
     "ws://localhost:19090/friend/ws/judge/result"
   );
   assert.equal(
-    api.resolveBackendServicePath("/friend/user/sendCode", ""),
-    "/user/sendCode"
+    api.resolveBackendServicePath("/friend/user/register", ""),
+    "/user/register"
   );
   assert.equal(
     api.resolveBackendServicePath("/friend/question/semiLogin/list", "/api/friend"),
@@ -170,8 +170,8 @@ async function main() {
     async () => {
       await withWindowValue(undefined, async () => {
         assert.equal(
-          api.resolveBackendServicePath("/friend/user/sendCode"),
-          "/user/sendCode"
+          api.resolveBackendServicePath("/friend/user/register"),
+          "/user/register"
         );
         assert.equal(
           api.resolveJudgeWebSocketUrl("http://localhost:9202"),

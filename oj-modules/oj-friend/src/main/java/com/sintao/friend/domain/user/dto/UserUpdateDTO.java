@@ -19,8 +19,6 @@ public class UserUpdateDTO {
 
     private String phone;
 
-    private String email;
-
     private String wechat;
 
     private String introduce;
