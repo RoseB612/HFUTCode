@@ -15,6 +15,8 @@ export const appNav = [
   { label: "题库", href: "/problems" },
   { label: "训练", href: "/training" },
   { label: "考试", href: "/exams" },
+  { label: "简历分析", href: "/resume" },
+  { label: "模拟面试", href: "/interview" },
   { label: "我的", href: "/me" }
 ];
 
