@@ -90,3 +90,4 @@ Notes:
   as `demo_user_1@syncode.dev` use the local development password `SynCode123!`.
 - Databases created before the password-login change must run
   `deploy/dev/sql/2026-09-17-user-password-auth.sql` once before starting the services.
+  PostgreSQL deployments use `deploy/dev/sql/2026-09-18-user-password-auth-postgres.sql`.
