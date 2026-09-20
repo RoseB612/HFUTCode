@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { buildAuthHeaders, resolveBackendUrl, type ApiEnvelope } from "@aioj/api";
-import { getServerAccessToken } from "../../../lib/server-auth";
+import { getServerAccessToken } from "../../../../lib/server-auth";
 
 export async function GET() {
   const token = await getServerAccessToken();
